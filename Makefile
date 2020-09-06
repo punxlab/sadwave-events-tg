@@ -1,8 +1,13 @@
 GOPATH?=$(HOME)/go
-GO_VERSION:=$(shell go version)
-GO_VERSION_SHORT:=$(shell echo $(GO_VERSION)|sed -E 's/.* go(.*) .*/\1/g')
-BIN?=./bin/sadwave-events-tg
 
 build:
-	$(info #Building...)
-	go build -race -o $(BIN) ./cmd/main.go
+	GOARCH=amd64 GOOS=linux go build -o ./bin/sadwave-events-tg ./cmd/main.go
+
+docker-build:
+	docker build -t punxlab/sadwave-events-tg .
+
+docker-run:
+	docker run punxlab/sadwave-events-tg:latest
+
+docker-push:
+	docker push punxlab/sadwave-events-tg:latest
