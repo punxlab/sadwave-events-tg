@@ -7,11 +7,11 @@ import (
 )
 
 func Serve() {
-	http.HandleFunc("/ping", ping)
+	http.HandleFunc("/", ping)
 	go func() {
 		err := http.ListenAndServe(":80", nil)
 		if err != nil {
-			log.Panic(err)
+			log.Printf("serve ping: %v", err)
 		}
 	}()
 }
@@ -19,6 +19,6 @@ func Serve() {
 func ping(writer http.ResponseWriter, request *http.Request) {
 	_, err := fmt.Fprint(writer, "OK")
 	if err != nil {
-		log.Print(err)
+		log.Printf("ping: %v", err)
 	}
 }

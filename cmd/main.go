@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/punxlab/sadwave-events-tg/internal/app/ping"
-	"github.com/punxlab/sadwave-events-tg/internal/config"
 	"log"
 
 	"github.com/punxlab/sadwave-events-tg/internal/app"
+	"github.com/punxlab/sadwave-events-tg/internal/app/ping"
+	"github.com/punxlab/sadwave-events-tg/internal/config"
 )
 
 func main() {
