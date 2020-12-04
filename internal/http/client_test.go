@@ -14,11 +14,11 @@ import (
 )
 
 const (
-	port          = 8080
+	port          = 1111
 	scheme        = "http"
-	successAction = "/success"
-	errorAction   = "/error"
-	baseUrl       = "localhost"
+	successAction = "success"
+	errorAction   = "error"
+	baseUrl       = "127.0.0.1"
 )
 
 type TestData struct {
@@ -48,7 +48,7 @@ func TestClient_Get(t *testing.T) {
 
 		serve(want, nil)
 
-		sut := NewClient(fmt.Sprintf("%s:%s:%v", scheme, baseUrl, port), time.Second*30)
+		sut := NewClient(fmt.Sprintf("%s://%s:%v", scheme, baseUrl, port), time.Second*30)
 
 		got := new(TestData)
 		err := sut.Get(ctx, successAction, got)
@@ -60,7 +60,7 @@ func TestClient_Get(t *testing.T) {
 
 func serve(successResult *TestData, errorResult *ErrorData) {
 	http.HandleFunc(
-		successAction,
+		"/"+successAction,
 		func(w http.ResponseWriter, req *http.Request) {
 			b, err := json.Marshal(successResult)
 			if err != nil {
@@ -79,7 +79,7 @@ func serve(successResult *TestData, errorResult *ErrorData) {
 	)
 
 	http.HandleFunc(
-		errorAction,
+		"/"+errorAction,
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, errorResult.Text, errorResult.Code)
 		},
