@@ -2,15 +2,12 @@ package app
 
 import (
 	"context"
-	"log"
-	"time"
-
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"log"
 
 	"github.com/punxlab/sadwave-events-tg/internal/app/api"
 	"github.com/punxlab/sadwave-events-tg/internal/app/command"
 	"github.com/punxlab/sadwave-events-tg/internal/config"
-	"github.com/punxlab/sadwave-events-tg/internal/http"
 )
 
 type Runner interface {
@@ -33,9 +30,7 @@ func NewApp(cfg *config.Config) (Runner, error) {
 		bot: bot,
 		cfg: cfg,
 		handler: command.NewCommandHandler(
-			api.NewSadwaveAPI(
-				http.NewClient(cfg.API.Host, time.Duration(cfg.API.Timeout)),
-			),
+			api.NewSadwaveAPI(cfg.API.Host),
 		),
 	}, nil
 }

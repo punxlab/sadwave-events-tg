@@ -3,24 +3,38 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+
+	"github.com/go-resty/resty/v2"
+	"github.com/pkg/errors"
 
 	"github.com/punxlab/sadwave-events-tg/internal/app/api/model"
-	"github.com/punxlab/sadwave-events-tg/internal/http"
 )
 
+var ErrNotFound = errors.New("not found")
+
 type api struct {
-	client http.Client
+	client *resty.Client
 }
 
-func NewSadwaveAPI(client http.Client) model.SadwaveAPI {
+func NewSadwaveAPI(apiUrl string) model.SadwaveAPI {
+	c := resty.New()
+	c.SetHostURL(apiUrl)
+
 	return &api{
-		client: client,
+		client: c,
 	}
 }
 
 func (a *api) Events(ctx context.Context, city string) ([]*model.Event, error) {
 	res := make([]*model.Event, 0)
-	err := a.client.Get(ctx, fmt.Sprintf("/api/events/%s", city), &res)
+	err := a.do(func() (*resty.Response, error) {
+		return a.client.
+			R().
+			SetContext(ctx).
+			SetResult(&res).
+			Get(fmt.Sprintf("/api/events/%s", city))
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -30,10 +44,33 @@ func (a *api) Events(ctx context.Context, city string) ([]*model.Event, error) {
 
 func (a *api) Cities(ctx context.Context) ([]*model.City, error) {
 	res := make([]*model.City, 0)
-	err := a.client.Get(ctx, "/api/cities", &res)
+	err := a.do(func() (*resty.Response, error) {
+		return a.client.
+			R().
+			SetContext(ctx).
+			SetResult(&res).
+			Get("/api/cities")
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
+}
+
+func (a *api) do(f func() (*resty.Response, error)) error {
+	resp, err := f()
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode() == http.StatusNotFound {
+		return ErrNotFound
+	}
+
+	if !resp.IsSuccess() {
+		return errors.Errorf("unexpected status %s: %s", resp.Status(), string(resp.Body()))
+	}
+
+	return nil
 }
