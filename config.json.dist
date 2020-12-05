@@ -1,6 +1,6 @@
 {
   "api" : {
-    "host": "https://sadwaveeventsapi.azurewebsites.net/",
+    "host": "${SADWAVE_API_URL}",
     "timeout": "3s"
   },
   "command" : {
@@ -8,6 +8,6 @@
     "offset": 0
   },
   "bot" : {
-    "token": "1214363364:AAETTEWlMjgyH253-qKzk8FVRaVls2Trx-o"
+    "token": "${TG_BOT_TOKEN}"
   }
 }
