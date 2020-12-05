@@ -23,5 +23,5 @@ jobs:
     - name: Generate config
       env:
         TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-        SAWAVE_API_URL: ${{ secrets.SADWAVE_API_URL }}
+        SADWAVE_API_URL: ${{ secrets.SADWAVE_API_URL }}
       run: eval "echo \"$(< ./config.json.dist)\"" > ./config.json
