@@ -1,13 +1,13 @@
 {
-  "api" : {
-    "host": "${SADWAVE_API_URL}",
-    "timeout": "3s"
+  \"api\" : {
+    \"host\": \"${SADWAVE_API_URL}\",
+    \"timeout\": \"3s\"
   },
-  "command" : {
-    "timeout": 60,
-    "offset": 0
+  \"command\" : {
+    \"timeout\": 60,
+    \"offset\": 0
   },
-  "bot" : {
-    "token": "${TG_BOT_TOKEN}"
+  \"bot\" : {
+    \"token\": \"${TG_BOT_TOKEN}\"
   }
 }
