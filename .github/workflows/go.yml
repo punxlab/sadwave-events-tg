@@ -17,14 +17,14 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     - name: Build
-      run: GOARCH=amd64 GOOS=linux go build -o ./bin/sadwave-events-tg ./cmd/main.go && ls bin
+      run: GOARCH=amd64 GOOS=linux go build -o ./bin/sadwave-events-tg ./cmd/main.go
     - name: Test
       run: go test -v ./...
     - name: Generate config
       env:
         TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
         SADWAVE_API_URL: ${{ secrets.SADWAVE_API_URL }}
-      run: eval "echo \"$(< config.json.dist)\"" > config.json && ls
+      run: eval "echo \"$(< config.json.dist)\"" > config.json
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
     - name: Set up Docker Buildx
@@ -38,6 +38,6 @@ jobs:
       id: docker_build
       uses: docker/build-push-action@v2
       with:
+        context: ${{ github.repository }}
         push: true
         tags: punxlab/sadwave-events-tg:latest
-        run: ls
