@@ -2,7 +2,7 @@ FROM alpine
 
 EXPOSE 80
 
-COPY bin/sadwave-events-tg .
+COPY bin/sadwave-events-tg bin/sadwave-events-tg
 COPY config.json .
 
-CMD ["/sadwave-events-tg"]
+CMD ["/bin/sadwave-events-tg"]
