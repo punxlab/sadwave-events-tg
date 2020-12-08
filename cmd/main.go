@@ -25,7 +25,7 @@ func main() {
 	ping.Serve()
 
 	log.Print("starting the app")
-	defer log.Print("the app has been finished")
+	defer log.Print("the app has been stopped")
 	if err = a.Run(ctx); err != nil {
 		log.Panicf("run app: %s", err.Error())
 	}
