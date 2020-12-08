@@ -28,7 +28,6 @@ jobs:
         eval "echo \"$(< config.json.dist)\"" > config.json
         cat config.json
         ls
-        ls bin
     - name: Login to DockerHub
       uses: docker/login-action@v1
       with:
