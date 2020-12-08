@@ -14,12 +14,12 @@ func main() {
 
 	cfg, err := config.NewConfig()
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err.Error())
 	}
 
 	a, err := app.NewApp(cfg)
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err.Error())
 	}
 
 	ping.Serve()
@@ -27,6 +27,6 @@ func main() {
 	log.Print("starting the app")
 	defer log.Print("the app has been finished")
 	if err = a.Run(ctx); err != nil {
-		log.Panic(err)
+		log.Panic(err.Error())
 	}
 }
