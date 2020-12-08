@@ -16,7 +16,7 @@ func Serve() {
 		}
 	})
 	go func() {
-		err := http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(":80", nil)
 		if err != nil {
 			log.Printf("serve ping: %v", err)
 		}

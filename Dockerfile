@@ -1,6 +1,6 @@
 FROM alpine
 
-EXPOSE 8080
+EXPOSE 80
 
 COPY bin/sadwave-events-tg .
 COPY config.json .
