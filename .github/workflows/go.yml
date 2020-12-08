@@ -25,15 +25,16 @@ jobs:
         TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
         SADWAVE_API_URL: ${{ secrets.SADWAVE_API_URL }}
       run: eval "echo \"$(< config.json.dist)\"" > config.json
-    - name: Build and push image
+    - name: Dockerhub login
       uses: azure/docker-login@v1
       with:
         login-server: hub.docker.com
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push umage
       run: |
-        docker build -t punxlab/sadwave-events-tg .
-        docker push punxlab/sadwave-events-tg:latest
+          docker build -t punxlab/sadwave-events-tg .
+          docker push punxlab/sadwave-events-tg:latest
 
 #    - name: Set up QEMU
 #      uses: docker/setup-qemu-action@v1
