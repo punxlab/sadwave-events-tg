@@ -3,12 +3,12 @@ package command
 import (
 	"bytes"
 	"context"
-	"github.com/goodsign/monday"
 	"html/template"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/goodsign/monday"
 	"github.com/punxlab/sadwave-events-tg/internal/app/api/model"
 )
 

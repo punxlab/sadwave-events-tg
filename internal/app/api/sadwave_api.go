@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
-
 	"github.com/punxlab/sadwave-events-tg/internal/app/api/model"
 )
 
@@ -33,7 +32,7 @@ func (a *api) Events(ctx context.Context, city string) ([]*model.Event, error) {
 			R().
 			SetContext(ctx).
 			SetResult(&res).
-			Get(fmt.Sprintf("/api/events/%s", city))
+			Get(fmt.Sprintf("events/%s", city))
 	})
 	if err != nil {
 		return nil, err
@@ -49,7 +48,7 @@ func (a *api) Cities(ctx context.Context) ([]*model.City, error) {
 			R().
 			SetContext(ctx).
 			SetResult(&res).
-			Get("/api/cities")
+			Get("/cities")
 	})
 	if err != nil {
 		return nil, err
