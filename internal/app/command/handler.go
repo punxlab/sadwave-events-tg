@@ -114,6 +114,7 @@ func (h *handler) setCommands(commands map[string]*model.City) {
 }
 
 func (h *handler) helpResponse() (string, error) {
+	return "help", nil
 	t, err := template.
 		New("help").
 		Parse(`{{range .}}/{{.Code}} - {{.Name}}
