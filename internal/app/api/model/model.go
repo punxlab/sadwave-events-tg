@@ -7,19 +7,13 @@ type SadwaveAPI interface {
 	Cities(ctx context.Context) ([]*City, error)
 }
 
-type Date struct {
-	Date string `json:"date"`
-	Time string `json:"time"`
-}
-
 type Event struct {
-	Name     string `json:"name"`
-	Overview string `json:"overview"`
-	Url      string `json:"url"`
-	Date     Date   `json:"date"`
+	Title           string
+	DescriptionHTML string
+	ImageURL        string
 }
 
 type City struct {
-	Alias string `json:"alias"`
-	Name  string `json:"name"`
+	Code string
+	Name string
 }

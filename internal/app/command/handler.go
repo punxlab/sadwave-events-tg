@@ -3,13 +3,9 @@ package command
 import (
 	"bytes"
 	"context"
-	"html/template"
-	"strings"
-	"sync"
-	"time"
-
-	"github.com/goodsign/monday"
 	"github.com/punxlab/sadwave-events-tg/internal/app/api/model"
+	"html/template"
+	"sync"
 )
 
 const (
@@ -76,7 +72,7 @@ func (h *handler) fillCitiesCommands(ctx context.Context) error {
 func citiesToCommands(cities []*model.City) map[string]*model.City {
 	res := make(map[string]*model.City, len(cities))
 	for _, c := range cities {
-		res["/"+c.Alias] = c
+		res["/"+c.Code] = c
 	}
 
 	return res
@@ -94,13 +90,9 @@ func eventsResponse(events []*model.Event) (string, error) {
 
 	t, err := template.
 		New("events").
-		Funcs(template.FuncMap{
-			"formatDate": formatDate,
-			"formatTime": formatTime,
-		}).
 		Parse(`{{range .}}
-<a href="{{.Url}}"><b>{{formatDate .Date.Date}} в {{formatTime .Date.Time}}</b></a>
-{{.Overview}}
+{{.Title}}
+{{.DescriptionHTML}}
 {{end}}`)
 	if err != nil {
 		return "", err
@@ -149,24 +141,6 @@ func (h *handler) startResponse() (string, error) {
 	}
 
 	return renderTemplate(t, helpCommand)
-}
-
-func formatDate(d string) string {
-	res, err := time.Parse("2006-01-02T15:00:00", d)
-	if err != nil {
-		return d
-	}
-
-	return strings.ToLower(monday.Format(res, "02 January, Monday", monday.LocaleRuRU))
-}
-
-func formatTime(t string) string {
-	res, err := time.Parse("15:00:00", t)
-	if err != nil {
-		return t
-	}
-
-	return res.Format("15:00")
 }
 
 func renderTemplate(t *template.Template, data interface{}) (string, error) {
