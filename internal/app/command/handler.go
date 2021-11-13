@@ -116,7 +116,7 @@ func (h *handler) setCommands(commands map[string]*model.City) {
 func (h *handler) helpResponse() (string, error) {
 	t, err := template.
 		New("help").
-		Parse(`{{range .}}/{{.Alias}} - {{.Name}}
+		Parse(`{{range .}}/{{.Code}} - {{.Name}}
 {{end}}`)
 	if err != nil {
 		return "", err
@@ -128,7 +128,7 @@ func (h *handler) helpResponse() (string, error) {
 func (h *handler) startResponse() (string, error) {
 	t, err := template.
 		New("start").
-		Parse(`Привет. Здесь ты можешь найти афишу гигов под редакцией <a href="https://sadwave.com/">sadwave</a>.
+		Parse(`Привет! Здесь ты можешь найти афишу гигов под редакцией <a href="https://sadwave.com/">sadwave</a>.
 Вот список команд, которые ты можешь использовать:
 {{.}}/help - Напомнит команды выше`)
 	if err != nil {
