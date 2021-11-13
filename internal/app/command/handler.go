@@ -123,7 +123,12 @@ func (h *handler) helpResponse() (string, error) {
 		return "", err
 	}
 
-	return renderTemplate(t, h.commands())
+	r, err := renderTemplate(t, h.commands())
+	if err != nil {
+		return err.Error(), nil
+	}
+
+	return r, nil
 }
 
 func (h *handler) startResponse() (string, error) {
