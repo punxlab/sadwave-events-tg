@@ -36,8 +36,8 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Build and push image
       run: |
-          docker build -t ${{ secrets.AZURE_PUBLISH_PROFILE }}/sadwave-events-tg .
-          docker push ${{ secrets.AZURE_PUBLISH_PROFILE }}/sadwave-events-tg:latest
+          docker build -t punxlab/sadwave-events-tg .
+          docker push punxlab/sadwave-events-tg:latest
 
   deploy:
     name: Deploy
