@@ -13,6 +13,12 @@ const (
 	commandHelp  = "/help"
 )
 
+type event struct {
+	Title           string
+	DescriptionHTML template.HTML
+	ImageURL        string
+}
+
 type Handler interface {
 	Handle(ctx context.Context, cmd string) (string, error)
 }
@@ -48,6 +54,7 @@ func (h *handler) Handle(ctx context.Context, cmd string) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
 		return eventsResponse(events)
 	}
 
@@ -88,17 +95,26 @@ func eventsResponse(events []*model.Event) (string, error) {
 		return "Гигов нет", nil
 	}
 
+	renderedEvents := make([]*event, 0, len(events))
+	for _, e := range events {
+		renderedEvents = append(renderedEvents, &event{
+			Title:           e.Title,
+			DescriptionHTML: template.HTML(e.DescriptionHTML),
+			ImageURL:        e.ImageURL,
+		})
+	}
+
 	t, err := template.
 		New("events").
 		Parse(`{{range .}}
-{{.Title}}
+<strong>{{.Title}}</strong>
 {{.DescriptionHTML}}
 {{end}}`)
 	if err != nil {
 		return "", err
 	}
 
-	return renderTemplate(t, events)
+	return renderTemplate(t, renderedEvents)
 }
 
 func (h *handler) commands() map[string]*model.City {

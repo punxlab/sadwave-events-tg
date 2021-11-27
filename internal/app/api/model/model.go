@@ -13,6 +13,11 @@ type Event struct {
 	ImageURL        string
 }
 
+type CityEvents struct {
+	City   *City
+	Events []*Event
+}
+
 type City struct {
 	Code string
 	Name string
