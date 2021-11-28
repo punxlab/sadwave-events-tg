@@ -19,8 +19,13 @@ type event struct {
 	ImageURL        string
 }
 
+type Message struct {
+	Markup string
+	Photo  string
+}
+
 type Handler interface {
-	Handle(ctx context.Context, cmd string) (string, error)
+	Handle(ctx context.Context, cmd string) ([]*Message, error)
 }
 
 type handler struct {
@@ -35,10 +40,10 @@ func NewCommandHandler(api model.SadwaveAPI) Handler {
 	}
 }
 
-func (h *handler) Handle(ctx context.Context, cmd string) (string, error) {
+func (h *handler) Handle(ctx context.Context, cmd string) ([]*Message, error) {
 	err := h.fillCitiesCommands(ctx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if cmd == commandStart {
@@ -52,7 +57,7 @@ func (h *handler) Handle(ctx context.Context, cmd string) (string, error) {
 	if h.isCityCommand(cmd) {
 		events, err := h.api.Events(ctx, cmd)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		return eventsResponse(events)
@@ -90,31 +95,42 @@ func (h *handler) isCityCommand(cmd string) bool {
 	return ok
 }
 
-func eventsResponse(events []*model.Event) (string, error) {
+func eventsResponse(events []*model.Event) ([]*Message, error) {
 	if len(events) == 0 {
-		return "Гигов нет", nil
+		return []*Message{
+			{Markup: "Гигов нет"},
+		}, nil
 	}
 
-	renderedEvents := make([]*event, 0, len(events))
+	result := make([]*Message, 0, len(events))
 	for _, e := range events {
-		renderedEvents = append(renderedEvents, &event{
+		event := &event{
 			Title:           e.Title,
 			DescriptionHTML: template.HTML(e.DescriptionHTML),
 			ImageURL:        e.ImageURL,
+		}
+
+		t, err := template.
+			New("event").
+			Parse(`
+<strong>{{.Title}}</strong>
+{{.DescriptionHTML}}`)
+		if err != nil {
+			return nil, err
+		}
+
+		markup, err := renderTemplate(t, event)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, &Message{
+			Markup: markup,
+			Photo:  e.ImageURL,
 		})
 	}
 
-	t, err := template.
-		New("events").
-		Parse(`{{range .}}
-<strong>{{.Title}}</strong>
-{{.DescriptionHTML}}
-{{end}}`)
-	if err != nil {
-		return "", err
-	}
-
-	return renderTemplate(t, renderedEvents)
+	return result, nil
 }
 
 func (h *handler) commands() map[string]*model.City {
@@ -129,40 +145,48 @@ func (h *handler) setCommands(commands map[string]*model.City) {
 	h.mu.Unlock()
 }
 
-func (h *handler) helpResponse() (string, error) {
+func (h *handler) helpResponse() ([]*Message, error) {
 	t, err := template.
 		New("help").
 		Parse(`{{range .}}/{{.Code}} - {{.Name}}
 {{end}}`)
 	if err != nil {
-		return err.Error(), nil
-		return "", err
+		return nil, err
 	}
 
-	r, err := renderTemplate(t, h.commands())
+	markup, err := renderTemplate(t, h.commands())
 	if err != nil {
-		return err.Error(), nil
+		return nil, err
 	}
 
-	return r, nil
+	return []*Message{
+		{Markup: markup},
+	}, nil
 }
 
-func (h *handler) startResponse() (string, error) {
+func (h *handler) startResponse() ([]*Message, error) {
 	t, err := template.
 		New("start").
 		Parse(`Привет! Здесь ты можешь найти афишу гигов под редакцией <a href="https://sadwave.com/">sadwave</a>.
 Вот список команд, которые ты можешь использовать:
 {{.}}/help - Напомнит команды выше`)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	helpCommand, err := h.helpResponse()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return renderTemplate(t, helpCommand)
+	markup, err := renderTemplate(t, helpCommand)
+	if err != nil {
+		return nil, err
+	}
+
+	return []*Message{
+		{Markup: markup},
+	}, nil
 }
 
 func renderTemplate(t *template.Template, data interface{}) (string, error) {
