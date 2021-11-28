@@ -169,7 +169,7 @@ func (h *handler) startResponse() ([]*Message, error) {
 		New("start").
 		Parse(`Привет! Здесь ты можешь найти афишу гигов под редакцией <a href="https://sadwave.com/">sadwave</a>.
 Вот список команд, которые ты можешь использовать:
-{{.}}/help - Напомнит команды выше`)
+/help - Напомнит команды выше`)
 	if err != nil {
 		return nil, err
 	}

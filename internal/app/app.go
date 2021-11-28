@@ -3,13 +3,18 @@ package app
 import (
 	"context"
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/patrickmn/go-cache"
 	"github.com/punxlab/sadwave-events-tg/internal/app/api"
 	"github.com/punxlab/sadwave-events-tg/internal/app/command"
 	"github.com/punxlab/sadwave-events-tg/internal/config"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
+
+const defaultCacheExpiration = 24 * time.Hour
+const cleanupCacheInterval = 24 * time.Hour
 
 type Runner interface {
 	Run(ctx context.Context) error
@@ -19,6 +24,8 @@ type app struct {
 	bot     *tg.BotAPI
 	cfg     *config.Config
 	handler command.Handler
+
+	fileCache *cache.Cache
 }
 
 func NewApp(cfg *config.Config) (Runner, error) {
@@ -27,22 +34,24 @@ func NewApp(cfg *config.Config) (Runner, error) {
 		return nil, err
 	}
 
+	fileCache := cache.New(defaultCacheExpiration, cleanupCacheInterval)
 	return &app{
-		bot: bot,
-		cfg: cfg,
+		bot:       bot,
+		cfg:       cfg,
+		fileCache: fileCache,
 		handler: command.NewCommandHandler(
 			api.NewSadwaveAPI(cfg.API.Host),
 		),
 	}, nil
 }
 
-func (r *app) Run(ctx context.Context) error {
+func (a *app) Run(ctx context.Context) error {
 	cfg := tg.UpdateConfig{
-		Offset:  r.cfg.Command.Offset,
-		Timeout: r.cfg.Command.Timeout,
+		Offset:  a.cfg.Command.Offset,
+		Timeout: a.cfg.Command.Timeout,
 	}
 
-	updates, err := r.bot.GetUpdatesChan(cfg)
+	updates, err := a.bot.GetUpdatesChan(cfg)
 	if err != nil {
 		return err
 	}
@@ -52,20 +61,20 @@ func (r *app) Run(ctx context.Context) error {
 			continue
 		}
 
-		messages, err := r.handler.Handle(ctx, u.Message.Text)
+		messages, err := a.handler.Handle(ctx, u.Message.Text)
 		if err != nil {
 			log.Print(err)
 			continue
 		}
 
 		for _, m := range messages {
-			msg, err := tgMessage(m, u.Message.Chat.ID)
+			msg, err := a.tgMessage(m, u.Message.Chat.ID)
 			if err != nil {
 				log.Print(err)
 				continue
 			}
 
-			_, err = r.bot.Send(msg)
+			_, err = a.bot.Send(msg)
 			if err != nil {
 				log.Print(err)
 				continue
@@ -76,16 +85,9 @@ func (r *app) Run(ctx context.Context) error {
 	return nil
 }
 
-func tgMessage(msg *command.Message, chat int64) (tg.Chattable, error) {
+func (a *app) tgMessage(msg *command.Message, chat int64) (tg.Chattable, error) {
 	if msg.Photo != "" {
-		r, err := http.Get(msg.Photo)
-		if err != nil {
-			return nil, err
-		}
-
-		defer r.Body.Close()
-
-		body, err := ioutil.ReadAll(r.Body)
+		f, err := a.getFile(msg.Photo)
 		if err != nil {
 			return nil, err
 		}
@@ -96,10 +98,7 @@ func tgMessage(msg *command.Message, chat int64) (tg.Chattable, error) {
 					ChatID:              chat,
 					DisableNotification: true,
 				},
-				File: tg.FileBytes{
-					Name:  msg.Photo,
-					Bytes: body,
-				},
+				File: f,
 			},
 			Caption:   msg.Markup,
 			ParseMode: "HTML",
@@ -115,4 +114,31 @@ func tgMessage(msg *command.Message, chat int64) (tg.Chattable, error) {
 		ParseMode:             tg.ModeHTML,
 		DisableWebPagePreview: true,
 	}, nil
+}
+
+func (a *app) getFile(url string) (*tg.FileBytes, error) {
+	file, ok := a.fileCache.Get(url)
+	if ok {
+		return file.(*tg.FileBytes), nil
+	}
+
+	r, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer r.Body.Close()
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	f := &tg.FileBytes{
+		Name:  url,
+		Bytes: body,
+	}
+
+	a.fileCache.Set(url, f, defaultCacheExpiration)
+	return f, nil
 }
