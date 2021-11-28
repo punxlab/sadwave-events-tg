@@ -116,25 +116,25 @@ func (a *app) tgMessage(msg *command.Message, chat int64) (tg.Chattable, error) 
 	}, nil
 }
 
-func (a *app) getFile(url string) (*tg.FileBytes, error) {
+func (a *app) getFile(url string) (tg.FileBytes, error) {
 	file, ok := a.fileCache.Get(url)
 	if ok {
-		return file.(*tg.FileBytes), nil
+		return file.(tg.FileBytes), nil
 	}
 
 	r, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return tg.FileBytes{}, err
 	}
 
 	defer r.Body.Close()
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return nil, err
+		return tg.FileBytes{}, err
 	}
 
-	f := &tg.FileBytes{
+	f := tg.FileBytes{
 		Name:  url,
 		Bytes: body,
 	}
