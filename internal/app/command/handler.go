@@ -114,7 +114,10 @@ func eventsResponse(events []*model.Event) ([]*Message, error) {
 			New("event").
 			Parse(`
 <strong>{{.Title}}</strong>
-{{.DescriptionHTML}}`)
+
+{{.DescriptionHTML}}
+
+`)
 		if err != nil {
 			return nil, err
 		}
